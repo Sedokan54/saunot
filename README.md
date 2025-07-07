@@ -111,7 +111,7 @@ GİRİŞ:
 
 📋 SONRAKI ADIMLAR:
 ===================
-1. Firebase Console'da admin hesabı oluştur (kaanfurkankaya@gmail.com)
+1. Firebase Console'da admin hesabı oluştur 
 2. Backend'i stabil tutma çözümü
 3. Dashboard'a içerik ekleme
 4. Admin panel geliştirme
