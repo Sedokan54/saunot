@@ -30,8 +30,8 @@ Proje: SAU Arşiv MVP - Feature Geliştirmeleri ve Admin Sistemi
    ✅ Existing email actions: Estetik butonlar + responsive
 
 4. ADMİN SİSTEMİ:
-   ✅ Admin email: kaanfurkankaya@gmail.com
-   ✅ Admin şifre: --Bim9500
+   ✅ Admin email: 
+   ✅ Admin şifre: 
    ✅ Email verification bypass (admin için)
    ✅ LoginPage email validation bypass (admin için)
    ✅ Dashboard sayfası oluşturuldu:
