@@ -87,7 +87,7 @@ KAYIT:
 
 GİRİŞ:
 1. Email/şifre → Firebase signIn
-2. Admin kontrolü (kaanfurkankaya@gmail.com)
+2. Admin kontrolü 
 3a. Admin → Dashboard (verification bypass)
 3b. Normal user → Email verification kontrol
 4. Dashboard'a yönlendir
