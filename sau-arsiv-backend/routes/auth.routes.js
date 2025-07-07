@@ -5,7 +5,8 @@ const {
   login,
   forgotPassword,
   verifyEmail,
-  getProfile
+  getProfile,
+  checkEmail
 } = require('../controllers/firebase-auth.controller');
 
 // Validation middleware (opsiyonel - daha sonra ekleyebiliriz)
@@ -47,6 +48,7 @@ const validateRegister = (req, res, next) => {
 };
 
 // Routes
+router.post('/check-email', checkEmail);
 router.post('/register', validateRegister, register);
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);

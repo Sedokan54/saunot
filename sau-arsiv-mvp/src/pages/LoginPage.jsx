@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, GraduationCap, AlertCircle, MessageSquare, X, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, GraduationCap, AlertCircle, MessageSquare, X, CheckCircle, RefreshCw } from 'lucide-react';
 import { authService } from '../services/api';
+import { resendEmailVerification } from '../services/firebase-auth';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -22,8 +23,15 @@ const LoginPage = () => {
   });
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const validateEmail = (email) => {
+    // Admin email için özel durum
+    if (email === 'kaanfurkankaya@gmail.com') {
+      return true;
+    }
+    
     const sakaryaEmailRegex = /^[^\s@]+@ogr\.sakarya\.edu\.tr$/;
     return sakaryaEmailRegex.test(email);
   };
@@ -84,7 +92,13 @@ const LoginPage = () => {
       // Dashboard'a yönlendir
       navigate('/dashboard');
     } catch (error) {
-      setErrors({ general: error.message || 'Giriş yapılırken bir hata oluştu' });
+      const errorMessage = error.message || 'Giriş yapılırken bir hata oluştu';
+      setErrors({ general: errorMessage });
+      
+      // Email verification gerekiyorsa, resend butonu göster
+      if (errorMessage.includes('e-posta adresinizi doğrulayın')) {
+        setEmailVerificationSent(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -109,6 +123,19 @@ const LoginPage = () => {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    try {
+      await resendEmailVerification();
+      setEmailVerificationSent(true);
+      setErrors({ general: 'E-posta doğrulama linki tekrar gönderildi. Lütfen e-posta kutunuzu kontrol edin.' });
+    } catch (error) {
+      setErrors({ general: 'E-posta doğrulama linki gönderilirken bir hata oluştu.' });
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="container">
@@ -129,6 +156,18 @@ const LoginPage = () => {
               <div className="error-message">
                 <AlertCircle className="error-message-icon" />
                 <span className="error-message-text">{errors.general}</span>
+                
+                {/* Email Verification Link */}
+                {emailVerificationSent && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/email-verification', { state: { email: formData.email } })}
+                    className="verification-link-btn"
+                  >
+                    <Mail className="h-4 w-4" />
+                    E-posta Doğrulama Sayfasına Git
+                  </button>
+                )}
               </div>
             )}
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, GraduationCap, AlertCircle, Hash, BookOpen, ArrowLeft, Info, CheckCircle } from 'lucide-react';
 import { authService } from '../services/api';
+import { checkEmailExists } from '../services/firebase-auth';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -115,9 +116,36 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNextStep = () => {
-    if (currentStep === 1 && validateStep1()) {
+  const handleNextStep = async () => {
+    if (currentStep !== 1 || !validateStep1()) {
+      return;
+    }
+
+    // Email varlığını kontrol et
+    setIsLoading(true);
+    try {
+      const result = await checkEmailExists(formData.email);
+      
+      if (result.exists) {
+        // Email zaten kayıtlı
+        setErrors({
+          email: 'Bu e-posta adresi ile zaten hesabınız bulunuyor. Giriş yapabilir veya şifrenizi sıfırlayabilirsiniz.'
+        });
+        return;
+      }
+      
+      // Email kullanılabilir, bir sonraki adıma geç
       setCurrentStep(2);
+      
+    } catch (error) {
+      console.error('Email check error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      setErrors({
+        general: `E-posta kontrolü hatası: ${error.code} - ${error.message}`
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -140,7 +168,16 @@ const RegisterPage = () => {
       setRegisteredEmail(formData.email);
       setIsSuccess(true);
     } catch (error) {
-      setErrors({ general: error.message || 'Kayıt olurken bir hata oluştu' });
+      const errorMessage = error.message || 'Kayıt olurken bir hata oluştu';
+      
+      // Eğer email already in use hatası ise, email field'ına koy
+      if (errorMessage.includes('hesabınız bulunuyor')) {
+        setErrors({ email: errorMessage });
+        // Birinci adıma geri dön
+        setCurrentStep(1);
+      } else {
+        setErrors({ general: errorMessage });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -386,39 +423,72 @@ const RegisterPage = () => {
                       />
                     </div>
                     {errors.email && (
-                      <p className="error-text">{errors.email}</p>
+                      <div>
+                        <p className="error-text">{errors.email}</p>
+                        {errors.email.includes('hesabınız bulunuyor') && (
+                          <div className="existing-email-actions">
+                            <button
+                              type="button"
+                              onClick={() => navigate('/login', { state: { email: formData.email } })}
+                              className="link-btn"
+                            >
+                              Hesabıma Giriş Yap
+                            </button>
+                            <span className="separator">•</span>
+                            <button
+                              type="button"
+                              onClick={() => navigate('/forgot-password', { state: { email: formData.email } })}
+                              className="link-btn"
+                            >
+                              Şifremi Unuttum
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="department">Bölüm</label>
-                    <div className="input-wrapper">
-                      <BookOpen className="input-icon" />
-                      <select
-                        id="department"
-                        name="department"
-                        value={formData.department}
-                        onChange={handleChange}
-                        className={`form-input ${errors.department ? 'error' : ''}`}
+                  {!(errors.email && errors.email.includes('hesabınız bulunuyor')) && (
+                    <>
+                      <div className="form-group">
+                        <label htmlFor="department">Bölüm</label>
+                        <div className="input-wrapper">
+                          <BookOpen className="input-icon" />
+                          <select
+                            id="department"
+                            name="department"
+                            value={formData.department}
+                            onChange={handleChange}
+                            className={`form-input ${errors.department ? 'error' : ''}`}
+                          >
+                            {departments.map((dept) => (
+                              <option key={dept.value} value={dept.value}>
+                                {dept.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {errors.department && (
+                          <p className="error-text">{errors.department}</p>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={handleNextStep}
+                        disabled={isLoading}
+                        className="submit-btn"
                       >
-                        {departments.map((dept) => (
-                          <option key={dept.value} value={dept.value}>
-                            {dept.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {errors.department && (
-                      <p className="error-text">{errors.department}</p>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleNextStep}
-                    className="submit-btn"
-                  >
-                    Devam Et
-                  </button>
+                        {isLoading ? (
+                          <>
+                            <div className="spinner"></div>
+                            Kontrol Ediliyor...
+                          </>
+                        ) : (
+                          'Devam Et'
+                        )}
+                      </button>
+                    </>
+                  )}
                 </>
               ) : (
                 <>
@@ -455,6 +525,12 @@ const RegisterPage = () => {
                       <div className="info-content">
                         <Info className="info-icon" />
                         <span className="info-text">En az 8 karakter, büyük/küçük harf ve rakam içermeli</span>
+                      </div>
+                    </div>
+                    <div className="warning-box" style={{marginTop: '0.5rem'}}>
+                      <div className="warning-content">
+                        <AlertCircle className="warning-icon" />
+                        <span className="warning-text">⚠️ SABIS şifrenizi kullanmayın! Yeni ve güvenli bir şifre oluşturun.</span>
                       </div>
                     </div>
                   </div>

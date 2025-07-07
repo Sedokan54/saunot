@@ -25,6 +25,14 @@ const apiCall = async (endpoint, options = {}) => {
 
 // Auth Service
 export const authService = {
+  // Email varlığını kontrol et
+  checkEmail: async (email) => {
+    return apiCall('/auth/check-email', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  },
+
   // Kayıt ol - Firebase Auth kullanarak
   register: async (userData) => {
     const { registerWithFirebase } = await import('./firebase-auth');

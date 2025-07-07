@@ -1,5 +1,60 @@
 const { auth, db } = require('../config/firebase');
 
+// @desc    Check if email exists
+// @route   POST /api/auth/check-email
+// @access  Public
+exports.checkEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'E-posta adresi gerekli'
+      });
+    }
+
+    // Validate Sakarya University email
+    const sakaryaEmailRegex = /^[^\s@]+@ogr\.sakarya\.edu\.tr$/;
+    if (!sakaryaEmailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sadece @ogr.sakarya.edu.tr uzantılı e-posta adresleri kabul edilir'
+      });
+    }
+
+    try {
+      // Check if user exists in Firebase Auth
+      await auth.getUserByEmail(email);
+      
+      // User exists
+      return res.json({
+        success: true,
+        exists: true,
+        message: 'Bu e-posta adresi zaten kayıtlı'
+      });
+    } catch (error) {
+      // User doesn't exist (auth/user-not-found)
+      if (error.code === 'auth/user-not-found') {
+        return res.json({
+          success: true,
+          exists: false,
+          message: 'E-posta adresi kullanılabilir'
+        });
+      }
+      
+      // Other error
+      throw error;
+    }
+  } catch (error) {
+    console.error('Email check error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'E-posta kontrolü sırasında bir hata oluştu'
+    });
+  }
+};
+
 // @desc    Register user with Firebase Auth
 // @route   POST /api/auth/register
 // @access  Public

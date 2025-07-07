@@ -5,6 +5,8 @@ import styles from './LoginPage.module.css';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/email-verification" element={<EmailVerificationPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );

@@ -4,7 +4,8 @@ import {
   signOut,
   sendEmailVerification,
   sendPasswordResetEmail,
-  signInWithCustomToken
+  signInWithCustomToken,
+  fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -36,6 +37,10 @@ export const registerWithFirebase = async (userData) => {
     
     return result;
   } catch (error) {
+    // Handle email already in use error
+    if (error.code === 'auth/email-already-in-use') {
+      throw new Error('Bu e-posta adresi ile zaten hesabınız bulunuyor. Giriş yapabilir veya şifrenizi sıfırlayabilirsiniz.');
+    }
     throw error;
   }
 };
@@ -45,8 +50,11 @@ export const loginWithFirebase = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     
-    // Check if email is verified
-    if (!userCredential.user.emailVerified) {
+    // Admin user için email verification'ı pas geç
+    const isAdmin = email === 'kaanfurkankaya@gmail.com';
+    
+    // Check if email is verified (admin hariç)
+    if (!isAdmin && !userCredential.user.emailVerified) {
       throw new Error('Lütfen önce e-posta adresinizi doğrulayın');
     }
     
@@ -96,6 +104,46 @@ export const resendEmailVerification = async () => {
       await sendEmailVerification(auth.currentUser);
     }
   } catch (error) {
+    throw error;
+  }
+};
+
+// Check if email exists - using create user attempt
+export const checkEmailExists = async (email) => {
+  try {
+    // İlk önce fetchSignInMethods deneyelim (verified emails için)
+    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    console.log('Sign-in methods for', email, ':', signInMethods);
+    
+    if (signInMethods.length > 0) {
+      return { exists: true, methods: signInMethods };
+    }
+    
+    // Eğer boş ise, unverified email olabilir - createUser ile test edelim
+    try {
+      await createUserWithEmailAndPassword(auth, email, 'temppass123456');
+      
+      // Eğer success ise email yok demektir, ama şimdi hesap oluşturduk
+      // Hemen silelim
+      if (auth.currentUser) {
+        await auth.currentUser.delete();
+      }
+      
+      return { exists: false };
+      
+    } catch (createError) {
+      console.log('Create user error:', createError.code);
+      
+      if (createError.code === 'auth/email-already-in-use') {
+        return { exists: true };
+      }
+      
+      // Başka hata varsa rethrow
+      throw createError;
+    }
+    
+  } catch (error) {
+    console.error('checkEmailExists error:', error);
     throw error;
   }
 };

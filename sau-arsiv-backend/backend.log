@@ -1,0 +1,17 @@
+
+> sau-arsiv-backend@1.0.0 start
+> node server.js
+
+Firebase initialized successfully
+Project ID: saunot-193b3
+Server running on port 5000
+Email check error: FirebaseAppError: Credential implementation provided to initializeApp() via the "credential" property failed to fetch a valid Google OAuth2 access token with the following error: "Could not load the default credentials. Browse to https://cloud.google.com/docs/authentication/getting-started for more information.".
+    at /home/kaan/saunot/sau-arsiv-backend/node_modules/firebase-admin/lib/app/firebase-app.js:87:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async exports.checkEmail (/home/kaan/saunot/sau-arsiv-backend/controllers/firebase-auth.controller.js:28:7) {
+  errorInfo: {
+    code: 'app/invalid-credential',
+    message: 'Credential implementation provided to initializeApp() via the "credential" property failed to fetch a valid Google OAuth2 access token with the following error: "Could not load the default credentials. Browse to https://cloud.google.com/docs/authentication/getting-started for more information.".'
+  },
+  codePrefix: 'app'
+}

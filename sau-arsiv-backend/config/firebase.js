@@ -2,7 +2,7 @@ const admin = require('firebase-admin');
 
 // Firebase Admin SDK yapılandırması
 const firebaseConfig = {
-  apiKey: "AIzaSyD0FphwVkoJUGKKyvaC8bXFtHAC7498nBY",
+  apiKey: "AIzaSyBau8KYBNSNzHMaryAgS-0i8pZOc9Brwa8",
   authDomain: "saunot-193b3.firebaseapp.com",
   projectId: "saunot-193b3",
   storageBucket: "saunot-193b3.firebasestorage.app",
@@ -13,10 +13,6 @@ const firebaseConfig = {
 
 // Firebase Admin SDK'yı başlat
 if (!admin.apps.length) {
-  // Test environment için
-  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
-  
   admin.initializeApp({
     projectId: firebaseConfig.projectId
   });
